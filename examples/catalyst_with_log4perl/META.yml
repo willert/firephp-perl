@@ -1,0 +1,25 @@
+---
+abstract: 'FirePHP example application'
+author:
+  - 'Sebastian Willert, C<willert@cpan.org>'
+distribution_type: module
+generated_by: 'Module::Install version 0.76'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: FirePHP-Example-Catalyst
+no_index:
+  directory:
+    - inc
+    - t
+requires:
+  Catalyst::Log::Log4perl: 0
+  Catalyst::Plugin::Static::Simple: 0
+  Catalyst::Runtime: 5.70000
+  FirePHP::Catalyst::Plugin: 0
+  MRO::Compat: 0
+  parent: 0
+resources:
+  license: http://dev.perl.org/licenses/
+version: 0.01

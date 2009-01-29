@@ -1,0 +1,6 @@
+Run bin/start_server and point your Firefox to http://localhost:3000/
+to test output to the FirePHP console.
+
+You might need to install FirePHP 0.2.1 which can be found at
+http://www.firephp.org/
+
