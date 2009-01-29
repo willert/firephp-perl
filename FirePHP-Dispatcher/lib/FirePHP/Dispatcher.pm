@@ -12,7 +12,7 @@ our $VERSION = '0.01_02';
 
 =head1 NAME
 
-FirePHP::Dispatcher
+FirePHP::Dispatcher - sends log messages to a FirePHP console
 
 =head1 SYNOPSIS
 
@@ -38,7 +38,9 @@ FirePHP::Dispatcher
 =head1 DESCRIPTION
 
 B<FirePHP::Dispatcher> implements the basic interface
-for logging to a FirePHP console.
+for logging to a FirePHP console. It is no logger on its own
+but rather a basic API that can be used by front-end loggers to
+divert or copy messages to a FirePHP console.
 
 =cut
 

@@ -47,8 +47,8 @@ And later...
 =head1 DESCRIPTION
 
 B<Catalyst::Plugin::FirePHP> automatically binds the current response headers
-to the L<FirePHP::Appender> in use and creates nested groups for all called
-actions.
+to a newly created L<FirePHP::Dispatcher> in use and on demand creates nested
+groups for all called actions.
 
 The only thing you need to do to start using FirePHP is include this
 plugin in your plugin list. Everything else should happen automatically,
