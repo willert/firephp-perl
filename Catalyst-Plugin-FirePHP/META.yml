@@ -15,10 +15,11 @@ no_index:
     - t
 recommends:
   Catalyst::Log::Log4perl: 0
+  DBIx::Class::Storage::Statistics::SimpleTable: 0
 requires:
   Catalyst: 0
   Class::BlackHole: 0
-  FirePHP::Dispatcher: 0
+  FirePHP::Dispatcher: 0.02
   Scope::Guard: 0
 resources:
   license: http://dev.perl.org/licenses/

@@ -111,16 +111,31 @@ sub setup_components {
   my $class = shift;
   $class->next::method( @_ );
   $class->mk_classdata( '_firephp_log_connector' );
-  my $logging_class = blessed( $class->log );
-  my $connector = "FirePHP::LogConnector::${logging_class}";
-  eval{ Catalyst::Utils::ensure_class_loaded( $connector ) };
-  if ( $@ ) {
-    $class->log->warn(
-      "Can't load connector for ${logging_class}, trying to use the " .
-        "(somewhat generic) connector for Catalyst::Log instead\n  [$@]"
-    );
-    $connector = "FirePHP::LogConnector::Catalyst::Log";
-    Catalyst::Utils::ensure_class_loaded( $connector );
+  my $org_logger = blessed( $class->log );
+  my $logging_class = $org_logger;
+  my $connector;
+  while ( 1 ) {
+    $connector = "FirePHP::LogConnector::${logging_class}";
+    eval{ Catalyst::Utils::ensure_class_loaded( $connector ) };
+    warn $@ if $@ and $@ !~ m/can't locate/i;
+    last unless $@;
+    if ( $logging_class !~ /^Catalyst::Log/ ) {
+      $logging_class = 'Catalyst::Log::Log4perl';
+      next;
+    } elsif ( $logging_class =~ /^Catalyst::Log::/ ) {
+      my @parts = split '::', $logging_class;
+      pop @parts;
+      $logging_class = join '::', @parts;
+      next;
+    } elsif ( $logging_class ne "Catalyst::Log" ) {
+      $class->log->warn(
+        "Can't load connector for ${org_logger}, trying to use the " .
+          "(somewhat generic) connector for Catalyst::Log instead\n  [$@]"
+        );
+      $logging_class = "Catalyst::Log";
+    } else {
+      die "Can't load connector for ${org_logger} and default doesn't work";
+    }
   }
   $class->_firephp_log_connector( $connector->new( $class ) );
   return;
@@ -144,6 +159,9 @@ sub dispatch {
   # only fuck around with internals if the log connector is enabled
   return $c->next::method( @_ ) unless $c->_firephp_log_connector->enabled;
 
+  my $guard = Scope::Guard->new(
+    sub{ $c->log->error( $@ ? $@:(), @{ $c->error }) if @{ $c->error } or $@ }
+  );
   $c->_firephp_log_connector->dispatch_request( $c->next::can, $c, @_ );
 }
 

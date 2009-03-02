@@ -71,10 +71,11 @@ sub dispatch_request {
   my $fire_php = FirePHP::Dispatcher->new( $c->response->headers  );
 
   local $self->{fire_php} = $fire_php;
-  my $finalize = Scope::Guard->new( $self->finalization_method );
+  my $finalize = Scope::Guard->new( $self->finalization_method( $c ) );
+
+  $self->prepare_dispatcher( $c, @_ );
 
   uplevel 1, sub{ $dispatch->( $c, @_ ) };
-
 }
 
 

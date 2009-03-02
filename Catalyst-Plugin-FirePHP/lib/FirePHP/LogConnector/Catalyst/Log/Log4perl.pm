@@ -91,7 +91,7 @@ sub new {
 
       # send the variable directly to the FirePHP dispatcher
       # that will produce a dump on its own
-      $appender->{fire_php}->log( @_ );
+      $appender->{fire_php}->log( @_ ) if $appender->{fire_php};
 
       # this is ugly, ugly, ugly: we need to flush before and after
       # the original dump to ensure that no messages are lost but
@@ -124,7 +124,9 @@ sub dispatch_request {
   my $fire_php = FirePHP::Dispatcher->new( $c->response->headers  );
 
   local $self->{appender}{fire_php} = $fire_php;
-  my $finalize = Scope::Guard->new( $self->finalization_method );
+  my $finalize = Scope::Guard->new( $self->finalization_method( $c ) );
+
+  $self->prepare_dispatcher( $c, @_ );
 
   $dispatch->( $c, @_ );
 }
