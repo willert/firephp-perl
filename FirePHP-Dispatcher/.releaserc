@@ -1,2 +1,3 @@
 cpan_user WILLERT
 skip_prereqs 1
+#release_subclass Module::Release::Git

@@ -1,0 +1,28 @@
+# don't package examples
+examples/
+
+# Avoid Module::Release files
+Debian_CPANTS.txt
+
+# Avoid Makemaker generated and utility files.
+Makefile
+blib
+pm_to_blib
+blibdirs
+
+# Avoid Module::Build generated and utility files.
+Build
+_build
+inc
+
+# Avoid temp and backup files.
+*~
+*.tmp
+*.old
+*.bak
+*#
+*.#
+*.DS_Store
+
+# No tarballs!
+*.gz
