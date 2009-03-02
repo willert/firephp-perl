@@ -1,9 +1,11 @@
 ---
-abstract: ~
+abstract: 'sends log messages to a FirePHP console'
 author:
   - 'Sebastian Willert, C<willert@cpan.org>'
+build_requires:
+  Test::Perl::Critic: 0
 distribution_type: module
-generated_by: 'Module::Install version 0.76'
+generated_by: 'Module::Install version 0.77'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -13,11 +15,13 @@ no_index:
   directory:
     - inc
     - t
+    - examples
 recommends:
   Log::Log4perl: 0
 requires:
   Class::Accessor::Fast: 0
   JSON::Any: 0
+  version: 0
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.01_02
+version: 0.02_01

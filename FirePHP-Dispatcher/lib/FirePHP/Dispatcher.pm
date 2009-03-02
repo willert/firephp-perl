@@ -6,9 +6,7 @@ use warnings;
 BEGIN { require 5.008001; }
 
 use version;
-our $VERSION = '0.01_02';
-
-=pod
+our $VERSION = '0.02_01';
 
 =head1 NAME
 
@@ -33,7 +31,7 @@ FirePHP::Dispatcher - sends log messages to a FirePHP console
  $fire_php->start_group( 'Propably empty:' );
  $fire_php->dismiss_group;
 
- $fire_php->finalize
+ $fire_php->finalize;
 
 =head1 DESCRIPTION
 
@@ -76,7 +74,7 @@ sub new {
     message_index => 0,
     group_stack   => [],
     stash         => {},
-    json          => JSON::Any->new,
+    json          => JSON::Any->new(),
   });
 }
 
@@ -155,6 +153,37 @@ Log a error message to the FirePHP console
 sub error {
   my ( $self, $message ) = @_;
   $self->send_headers( $self->format_message({ Type => 'ERROR' }, $message ));
+}
+
+=head1 TABLE METHODS
+
+=head2 $self->table( $label, $table )
+
+Prints the L<FirePHP::SimpleTable> or L<Text::SimpleTable> object
+to the FirePHP console
+
+=cut
+
+sub table {
+  my ( $self, $label, $table ) = @_;
+  $label = '' unless defined $label;
+
+  my $report;
+  if ( blessed $table and $table->isa( 'Text::SimpleTable' ) ) {
+    if ( not $table->isa('FirePHP::SimpleTable') ) {
+      require FirePHP::SimpleTable;
+      bless $table, 'FirePHP::SimpleTable';
+    }
+    $report = $table->draw;
+  } elsif ( ref $table eq 'ARRAY' ) {
+    $report = $table;
+  } else {
+    die "$table is neither an instance of Text::SimpleTable nor an array ref";
+  }
+
+  $self->send_headers(
+    $self->format_message({ Type => 'TABLE' }, [ $label, $report ] )
+  );
 }
 
 
@@ -308,12 +337,12 @@ sub build_message_headers {
   my $len = length $message;
 
   # split message into handable chunks
-  my @parts = grep{$_} split /.{5000}/, $message;
+  my @parts = grep{$_} split /(.{5000})/, $message;
 
   my %headers;
   for ( 0 .. $#parts ) {
     $headers{ $self->next_message_header } =
-      (!$_ ? $len : '') . '|' . $parts[$_] . ($_ < $#parts ? '\\' : '') . '|';
+      (!$_ ? $len : '') . '|' . $parts[$_] . '|' . ($_ < $#parts ? '\\' : '');
   }
 
   return %headers;
@@ -379,61 +408,6 @@ Content:
 
 Json message params:
   Type: LOG|TRACE|EXCEPTION|TABLE|DUMP
-
-
-total message length 30:
-
-[{"Type":"LOG"},"Hello World"]
-[{"Type":"GROUP_START","LABEL":"FOO"},null]
-[{"Type":"GROUP_END"},null]
-
-=head2 EXAMPLE PURE HTTP SESSION
-
- $http_headers->push_header(
-   'X-Wf-Protocol-1'     => 'http://meta.wildfirehq.org/' .
-     'Protocol/JsonStream/0.2',
-   'X-Wf-1-Plugin-1'     => 'http://meta.firephp.org/' .
-     'Wildfire/Plugin/FirePHP/Library-FirePHPCore/0.2.0',
-   'X-Wf-1-Structure-1'  => 'http://meta.firephp.org/' .
-     'Wildfire/Structure/FirePHP/FirebugConsole/0.1',
- );
-
- $http_headers->push_header(
-   'X-Wf-1-1-1-1' => '30|[{"Type":"LOG"},"Hell|\\',
-   'X-Wf-1-1-1-2' => '|o Wo|\\',
-   'X-Wf-1-1-1-3' => '|rld"]|',
- );
-
-
- $http_headers->push_header(
-   'X-Wf-1-1-1-4' => '43|[{"Type":"GROUP_START","Label":"Foo"},null]|',
- );
-
- $http_headers->push_header(
-   'X-Wf-1-1-1-6' => '33|[{"Type":"LOG"},"Hell|\\',
-   'X-Wf-1-1-1-7' => '|o Wo|\\',
-   'X-Wf-1-1-1-8' => '|rld!!!"]|',
- );
-
- $http_headers->push_header(
-   'X-Wf-1-1-1-9' => '33|[{"Type":"LOG"},"Hell|\\',
-   'X-Wf-1-1-1-10' => '|o again!!!"]|',
- );
-
- $http_headers->header(
-   'X-Wf-1-1-1-11' => '27|[{"Type":"GROUP_END"},null]|',
- );
-
- $http_headers->header(
-   'X-Wf-1-Structure-2'  => 'http://meta.firephp.org/' .
-     'Wildfire/Structure/FirePHP/Dump/0.1',
- );
-
- $http_headers->push_header(
-   'X-Wf-1-2-1-12' => '24|{"Dump":{"i":10,"j":20}}|',
- );
-
- $http_headers->header('X-Wf-1-Index', 12 );
 
 =head1 SEE ALSO
 

@@ -1,3 +1,5 @@
+.releaserc
+Changes
 inc/Module/AutoInstall.pm
 inc/Module/Install.pm
 inc/Module/Install/AutoInstall.pm
@@ -14,9 +16,11 @@ lib/FirePHP/Log4perl/Appender.pm
 lib/FirePHP/Log4perl/Layout.pm
 lib/FirePHP/LogConnector.pm
 lib/FirePHP/LogConnector/Null.pm
+lib/FirePHP/SimpleTable.pm
 Makefile.PL
 MANIFEST			This list of files
 META.yml
+README
 t/01use.t
 t/02pod.t
 t/03podcoverage.t

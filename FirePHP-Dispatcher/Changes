@@ -1,0 +1,7 @@
+# This file documents the revision history for Perl extension FirePHP::Dispatcher.
+
+0.02
+        - added support for tables
+
+0.01
+        - Initial version
