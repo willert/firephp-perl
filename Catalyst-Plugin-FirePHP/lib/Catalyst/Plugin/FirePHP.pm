@@ -6,7 +6,7 @@ use warnings;
 use 5.008005;
 
 use version;
-our $VERSION = '0.01_02';
+our $VERSION = '0.01_03';
 
 =head1 NAME
 
