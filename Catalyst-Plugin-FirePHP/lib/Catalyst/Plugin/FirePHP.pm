@@ -218,6 +218,12 @@ in later versions. Right now, it defaults to
 L<FirePHP::LogConnector::Catalyst::Log> regardless
 of debug mode.
 
+=head1 BUGS
+
+Plenty, I guess. This is a pre-release version of
+B<Catalyst::Plugin::FirePHP> and hasn't seen wide-spread
+testing.
+
 =head1 SOURCE AVAILABILITY
 
 This code is in Github:
