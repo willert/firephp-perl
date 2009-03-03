@@ -1,0 +1,89 @@
+NAME
+     Catalyst::Plugin::FirePHP
+
+SYNOPSIS
+    In your application class (e.g. MyApp.pm):
+
+     use Catalyst ( ..., '+Catalyst::Plugin::FirePHP' );
+     use Catalyst::Log::Log4perl;
+
+     __PACKAGE__->config(
+       name => 'Just a Catalyst application',
+       FirePHP => { action_grouping => 1, compact => 1 }
+     );
+
+     # only if you want to change the appender layout to use cspecs
+     __PACKAGE__->log( Catalyst::Log::Log4perl->new(
+       'log4perl.conf', override_cspecs => 1
+     ));
+
+    In your log4perl config (only if you want to change the message layout):
+
+     log4perl.rootLogger = DEBUG, SCREEN, FIREPHP
+     log4perl.appender.SCREEN = Log::Log4perl::Appender::Screen
+     log4perl.appender.SCREEN.layout = SimpleLayout
+
+     log4perl.appender.FIREPHP = FirePHP::Log4perl::Appender
+     log4perl.appender.FIREPHP.layout = FirePHP::Log4perl::Layout
+
+    And later...
+
+     $c->log->debug("This is using log4perl AND FirePHP!");
+
+DESCRIPTION
+    Catalyst::Plugin::FirePHP automatically binds the current response
+    headers to a newly created FirePHP::Dispatcher in use and on demand
+    creates nested groups for all called actions.
+
+    The only thing you need to do to start using FirePHP is include this
+    plugin in your plugin list. Everything else should happen automatically,
+    no config is needed.
+
+    This plugin tries to be as unintrusive as possible if your application
+    doesn't run in debug mode, but it is highly recommended to drop it
+    altogether in production servers.
+
+ACCESSORS
+  firephp_log
+    Direct access to the FirePHP::Dispatcher in use. Returns a
+    Class::BlackHole instance if none is available so doesn't blow up your
+    application in case you forget to call it conditionally as in
+
+      $c->firephp_log->info( 'Foo' ) if $c->firephp_log;
+
+EXTENDS
+  setup_components
+    After setup_components is executed this plugin tries to amend or hijack
+    the logger and create a suitable log connector, defaulting to
+    FirePHP::LogConnector::Catalyst::Log which replaces the original logger
+    and tries to forward as much as possible.
+
+  dispatch
+    Small wrapper that delegates all the work to the log connector if
+    FirePHP logging is enabled. If not, the normal call chain is resumed
+
+    Unfortunatly log connectors are responsible to ensure that the log is
+    flushed after the dispatch cycle ends. This can not easily be changed
+    due to various scoping issues.
+
+  execute
+    Implements action grouping
+
+INTERNALS
+  _firephp_log_connector
+    Access to the FirePHP::LogConnector in use. This might return a
+    FirePHP::LogConnector::Null in later versions. Right now, it defaults to
+    FirePHP::LogConnector::Catalyst::Log regardless of debug mode.
+
+SEE ALSO
+    <http://www.firephp.org>, Catalyst, FirePHP::Dispatcher
+
+AUTHOR
+    Sebastian Willert, "willert@cpan.org"
+
+COPYRIGHT AND LICENSE
+    Copyright 2009 by Sebastian Willert <willert@cpan.org>
+
+    This library is free software; you can redistribute it and/or modify it
+    under the same terms as Perl itself.
+
