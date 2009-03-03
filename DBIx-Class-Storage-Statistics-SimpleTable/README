@@ -1,0 +1,78 @@
+NAME
+    DBIx::Class::Storage::Statistics::SimpleTable - DBIC statistics in a
+    table
+
+SYNOPSIS
+     use My::DBIC::Schema;
+     use DBIx::Class::Storage::Statistics::SimpleTable;
+
+     my $dbic_schema = My::DBIC::Schema->connect;
+
+     # using DBIx::Class::Storage::Statistics::SimpleTable as single debug object
+     my $profiler = DBIx::Class::Storage::Statistics::SimpleTable->new();
+     $dbic_schema->storage->debugobj( $profiler );
+     $dbic_schema->debug( 1 );
+     # ... do stuff with your schema ...
+     print $profiler->report->draw;
+
+     # using DBIx::Class::Storage::Statistics::SimpleTable with delegation
+     # to the original object and FirePHP::Dispatcher support
+     my $profiler = DBIx::Class::Storage::Statistics::SimpleTable
+       ->new( 'FirePHP::SimpleTable' );
+     $profiler->install( $dbic_schema );
+     # ... do stuff with your schema ...
+     $firephp_dispatcher->table( 'DBIC Profile' => $profiler->table );
+
+DESCRIPTION
+    DBIx::Class::Storage::Statistics::SimpleTable is a
+    DBIx::Class::Storage::Statistics subclass that gathers DBIx::Class
+    profiling information in a Text::SimpleTable class or sub-class.
+
+    This module was created to support Catalyst::Plugin::FirePHP but maybe
+    some will find it useful one its own.
+
+METHODS
+  $class->new( ?$table_class )
+    Creates a new statistics object, optionally using the Text::SimpleTable
+    sub-class given as argument
+
+  $self->install( $storage )
+    Installs this statistics instance into a DBIx::Class::Storage object.
+    The original "debugobj" and "debug" state will be preserved and all
+    statistic events delegated to the original object.
+
+  $self->uninstall
+    Removes this statistics instance from the associated
+    DBIx::Class::Storage object and restores its original state.
+
+INFORMATIONAL METHODS
+  $self->report
+    Returns the gathered statistics as Text::SimpleTable object (or as the
+    sub-class choosen at object creation)
+
+  $self->elapsed_time
+    Returns the total time spend in DBIx::Class queries.
+
+  $self->query_count
+    Returns the number of queries processed.
+
+OVERRIDDEN METHODS
+  $self->query_start
+    Logs the starting time of the request
+
+  $self->query_end( $sql, @params )
+    Write the query string, parameters and elepsed time to the statistics
+    table.
+
+SEE ALSO
+    perl, Text::SimpleTable, FirePHP::Dispatcher
+
+AUTHOR
+    Sebastian Willert, "willert@cpan.org"
+
+COPYRIGHT AND LICENSE
+    Copyright 2009 by Sebastian Willert <willert@cpan.org>
+
+    This library is free software; you can redistribute it and/or modify it
+    under the same terms as Perl itself.
+
