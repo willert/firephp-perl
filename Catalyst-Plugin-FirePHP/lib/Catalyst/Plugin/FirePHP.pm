@@ -220,6 +220,16 @@ in later versions. Right now, it defaults to
 L<FirePHP::LogConnector::Catalyst::Log> regardless
 of debug mode.
 
+=head1 SOURCE AVAILABILITY
+
+This code is in Github:
+
+ git://github.com/willert/firephp-perl.git
+
+A small wiki with sample screenshots is available at:
+
+ L<http://wiki.github.com/willert/firephp-perl>
+
 =head1 SEE ALSO
 
 L<http://www.firephp.org>, L<Catalyst>, L<FirePHP::Dispatcher>
