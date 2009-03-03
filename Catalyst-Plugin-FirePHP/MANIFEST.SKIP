@@ -11,6 +11,7 @@
 
 # Avoid Module::Release stuff
 \B\.releaserc$
+\bDebian_CPANTS.txt$
 
 # Avoid Makemaker generated and utility files.
 \bMakefile$

@@ -3,16 +3,14 @@ package Catalyst::Plugin::FirePHP;
 use strict;
 use warnings;
 
-BEGIN { require 5.008001; }
+use 5.008005;
 
 use version;
 our $VERSION = '0.01_02';
 
-=pod
-
 =head1 NAME
 
- Catalyst::Plugin::FirePHP
+Catalyst::Plugin::FirePHP - sends Catalyst log messages to a FirePHP console
 
 =head1 SYNOPSIS
 

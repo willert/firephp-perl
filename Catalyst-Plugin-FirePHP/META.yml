@@ -1,5 +1,5 @@
 ---
-abstract: ~
+abstract: 'sends Catalyst log messages to a FirePHP console'
 author:
   - 'Sebastian Willert, C<willert@cpan.org>'
 distribution_type: module
@@ -21,6 +21,7 @@ requires:
   Class::BlackHole: 0
   FirePHP::Dispatcher: 0.02
   Scope::Guard: 0
+  perl: 5.8.5
 resources:
   license: http://dev.perl.org/licenses/
 version: 0.01_02
