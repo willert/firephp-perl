@@ -27,6 +27,7 @@ use Carp;
 use Scalar::Util qw/blessed weaken/;
 __PACKAGE__->mk_accessors( qw/catalyst logger / );
 
+use FirePHP::SimpleTable;
 
 =head1 METHODS
 
@@ -130,7 +131,8 @@ sub prepare_dispatcher {
   for my $model ( map{ $c->model( $_ ) } $c->models ) {
     if ( $model->isa('Catalyst::Model::DBIC::Schema') ) {
       my $profiler = 'DBIx::Class::Storage::Statistics::SimpleTable';
-      eval{ "require $profiler" } or next;
+      eval "require $profiler";
+      if ( my $err = $@ ) { warn "Error loading ${profiler}: ${err}"; next }
       $profiler->new('FirePHP::SimpleTable')->install( $model->storage );
     }
   }
