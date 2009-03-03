@@ -7,6 +7,10 @@
 ,v$
 \B\.svn\b
 
+\B\.git\b
+\B\.gitignore$
+\B\.releaserc$
+
 # Avoid Makemaker generated and utility files.
 \bMakefile$
 \bblib
