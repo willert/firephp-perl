@@ -6,6 +6,11 @@
 \bCVS\b
 ,v$
 \B\.svn\b
+\B\.git\b
+\B\.gitignore$
+
+# Avoid Module::Release stuff
+\B\.releaserc$
 
 # Avoid Makemaker generated and utility files.
 \bMakefile$

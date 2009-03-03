@@ -1,2 +1,5 @@
 # This file documents the revision history
 # for DBIx::Class::Storage::Statistics::SimpleTable
+0.01_01 - Tue Mar  3 04:14:26 2009
+	Initial release
+

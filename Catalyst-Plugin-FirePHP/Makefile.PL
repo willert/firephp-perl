@@ -4,8 +4,6 @@ use version;
 name 'Catalyst-Plugin-FirePHP';
 all_from 'lib/Catalyst/Plugin/FirePHP.pm';
 
-include  'Module::AutoInstall';
-
 requires 'FirePHP::Dispatcher' => '0.02';
 requires 'Catalyst';
 
@@ -15,5 +13,4 @@ requires 'Class::BlackHole';
 recommends 'Catalyst::Log::Log4perl';
 recommends 'DBIx::Class::Storage::Statistics::SimpleTable';
 
-auto_install();
 WriteAll;
