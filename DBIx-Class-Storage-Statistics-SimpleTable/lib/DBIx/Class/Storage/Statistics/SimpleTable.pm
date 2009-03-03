@@ -32,7 +32,7 @@ DBIx::Class::Storage::Statistics::SimpleTable - DBIC statistics in a table
    ->new( 'FirePHP::SimpleTable' );
  $profiler->install( $dbic_schema );
  # ... do stuff with your schema ...
- $firephp_dispatcher->table( 'DBIC Profile' => $profiler->table );
+ $firephp_dispatcher->table( 'DBIC Profile' => $profiler->report );
 
 =head1 DESCRIPTION
 
@@ -52,7 +52,6 @@ use Time::HiRes qw/gettimeofday tv_interval/;
 use MRO::Compat;
 use Text::SimpleTable;
 use Scalar::Util qw/weaken/;
-use Carp;
 
 =head1 METHODS
 
