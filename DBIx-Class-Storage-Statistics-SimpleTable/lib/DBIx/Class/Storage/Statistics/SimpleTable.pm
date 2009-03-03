@@ -41,6 +41,9 @@ L<DBIx::Class::Storage::Statistics> subclass that gathers
 L<DBIx::Class> profiling information in a L<Text::SimpleTable>
 class or sub-class.
 
+This module was created to support L<Catalyst::Plugin::FirePHP>
+but maybe some will find it useful one its own.
+
 =cut
 
 use base qw/DBIx::Class::Storage::Statistics/;
