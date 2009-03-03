@@ -7,4 +7,7 @@ all_from './lib/DBIx/Class/Storage/Statistics/SimpleTable.pm';
 requires 'DBIx::Class' => '0.08';
 requires 'Text::SimpleTable';
 
+requires 'version';
+requires 'MRO::Compat';
+
 WriteAll;

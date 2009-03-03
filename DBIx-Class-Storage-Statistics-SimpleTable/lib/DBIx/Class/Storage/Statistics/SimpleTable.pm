@@ -3,7 +3,7 @@ package DBIx::Class::Storage::Statistics::SimpleTable;
 use warnings;
 use strict;
 
-BEGIN { require 5.008001; }
+use 5.008005;
 
 use version;
 our $VERSION = '0.01_01';

@@ -15,7 +15,10 @@ no_index:
     - t
 requires:
   DBIx::Class: 0.08
+  MRO::Compat: 0
   Text::SimpleTable: 0
+  perl: 5.8.5
+  version: 0
 resources:
   license: http://dev.perl.org/licenses/
 version: 0.01_01
