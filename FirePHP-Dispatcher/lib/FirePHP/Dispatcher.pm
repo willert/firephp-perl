@@ -320,6 +320,39 @@ sub rollback_last_message {
   $http->remove_header( $hdr );
 }
 
+=head2 $self->remove_message_by_id( $msg_id )
+
+Removes the message with the given id and reorders
+the ones around it.
+
+CAVEAT: currently doesn't work correctly for multi-part messages
+that contain more than 5000 characters.
+
+=cut
+
+sub remove_message_by_id {
+  my ( $self, @ids ) = @_;
+  @ids = sort{ $a <=> $b } @ids or return;
+  my $http = $self->http_headers or return;
+
+  my $offset = 0;
+  my $last_msg = $self->{message_index};
+
+  for my $idx ( 1 ..  $last_msg - 1 ) {
+    $offset += 1 if $idx == $ids[0];
+    if ( $offset ) {
+      $http->header(
+        sprintf( 'X-Wf-1-1-1-%d', $idx ),
+        $http->header( sprintf( 'X-Wf-1-1-1-%d', $idx + $offset ) )
+      );
+    }
+  }
+
+  $http->remove_header( sprintf( 'X-Wf-1-1-1-%d', $_ ) )
+    for ( ( $last_msg - $offset + 1 ) .. ( $last_msg ) );
+
+}
+
 
 =head2 %headers = $self->build_message_headers( $message )
 
