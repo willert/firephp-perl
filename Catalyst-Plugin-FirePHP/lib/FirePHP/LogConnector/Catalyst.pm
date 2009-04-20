@@ -80,6 +80,10 @@ Right now, this basically handles logging request parameters.
 sub prepare_dispatcher {
   my ( $self, $c ) = @_;
 
+  # calling abort is unreliable because of an API bug in
+  # Catalyst::Log::Log4perl (abort is no accessor but a command there)
+  return if $c->log->{abort};
+
   # error reporting is unreliable in this stage
   local $SIG{__DIE__} = sub{
     $c->log->error( @_ );
@@ -161,6 +165,10 @@ sub finalization_method {
 
     my $finalize = Scope::Guard->new(sub{ $fire_php->finalize });
 
+    # calling abort is unreliable because of an API bug in
+    # Catalyst::Log::Log4perl (abort is no accessor but a command there)
+    return if $c->log->{abort};
+
     # scan our models for supported base classes
     for my $name ( $c->models ) {
       my $model = $c->model( $name );
@@ -188,6 +196,8 @@ sub finalization_method {
       $c->stats->report;
     };
     $fire_php->table( "Request Statistics" => $t );
+
+    $fire_php->remove_message_by_id( 1 );
 
   };
 }

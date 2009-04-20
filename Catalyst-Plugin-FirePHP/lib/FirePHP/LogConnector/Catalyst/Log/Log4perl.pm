@@ -72,15 +72,11 @@ sub new {
 
   die "Internal error while creating appender instance" unless $appender;
 
-  printf STDERR "Ready: $appender\n", ;
-
   $self->appender( $appender );
 
   # override log4perl's _dump method because to much info
   # is lost when the layout gets hold of it
   my $logger_class = blessed( $self->logger );
-
-  printf STDERR "Logger is: $logger_class\n", ;
 
   my $original_dumper = $logger_class->can( '_dump' );
   if ( $original_dumper ) {

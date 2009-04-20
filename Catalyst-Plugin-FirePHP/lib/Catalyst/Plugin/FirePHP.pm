@@ -155,7 +155,8 @@ sub dispatch {
   my $c = shift;
 
   # only fuck around with internals if the log connector is enabled
-  return $c->next::method( @_ ) unless $c->_firephp_log_connector->enabled;
+  return $c->next::method( @_ )
+    unless $c->_firephp_log_connector and $c->_firephp_log_connector->enabled;
 
   my $guard = Scope::Guard->new(
     sub{ $c->log->error( $@ ? $@:(), @{ $c->error }) if @{ $c->error } or $@ }
