@@ -51,26 +51,63 @@ use base qw/DBIx::Class::Storage::Statistics/;
 use Time::HiRes qw/gettimeofday tv_interval/;
 use MRO::Compat;
 use Text::SimpleTable;
-use Scalar::Util qw/weaken/;
+use Scalar::Util qw/weaken blessed/;
+use Carp;
 
 =head1 METHODS
 
-=head2 $class->new( ?$table_class )
+=head2 $class->new( ?$table_class, \%opts )
 
 Creates a new statistics object, optionally using the
-L<Text::SimpleTable> sub-class given as argument
+L<Text::SimpleTable> sub-class given as argument.
+
+Options include:
+
+=over 4
+
+=item threshold
+
+Queries with a runtime below this number of seconds (with floating point
+precision) won't be logged. This is useful for slow query reporting.
+
+=back
 
 =cut
 
 sub new {
-  my ( $class, $table_class ) = @_;
+  my ( $class, $table_class, $opts ) = @_;
+  if ( ref $table_class eq 'HASH' ) {
+    $opts = $table_class;
+    undef $table_class;
+  }
+
   $table_class ||= 'Text::SimpleTable';
+  $opts        ||= {};
+
   die "$table_class is no Text::SimpleTable"
     unless $table_class->isa('Text::SimpleTable');
+
   my $self = $class->next::method();
-  $self->{table_class} = $table_class;
-  $self->{total_time} = 0.0;
-  $self->{query_count} = 0;
+  $self->{table_class}   = $table_class;
+  $self->{total_time}    = 0.0;
+  $self->{query_count}   = 0;
+  $self->{threshold}     = delete $opts->{threshold} || 0;
+  $self->{report_header} = delete $opts->{header} || [
+      [ 30, 'SQL'    ],
+      [ 28, 'Params' ],
+      [  9, 'Time'   ],
+  ];
+  $self->{skip_params}   = delete $opts->{skip_params};
+
+  $self->{initiator}     = caller;
+
+  if ( @{ $self->{report_header} } == 3 and $self->{skip_params} ) {
+    $self->{report_header}[0][0] += $self->{report_header}[1][0];
+    splice @{ $self->{report_header} }, 1, 1;
+  }
+
+  croak "Unknown options: " . join( ', ', keys %$opts ) if %$opts;
+
   return $self;
 }
 
@@ -116,7 +153,25 @@ Returns the gathered statistics as L<Text::SimpleTable> object
 
 sub report {
   my $self = shift;
-  return $self->{report_table};
+
+  my $this = $self;
+  my @report_chain = $this;
+
+  while ( my $next_report = $this->{storage_debugobj} ) {
+    if ( blessed $next_report and $next_report->isa( __PACKAGE__ ) ) {
+      push @report_chain, $next_report;
+    }
+    $this = $next_report;
+  }
+
+  my ( $report ) = grep{
+    # printf STDERR "Checking %s vs. %s\n", scalar caller(), $_->{initiator} ;
+    scalar caller() eq $_->{initiator} and $_->{report_table}
+  } @report_chain;
+#  $report ||= $self;
+
+  return $report->{report_table};
+
 }
 
 =head2 $self->elapsed_time
@@ -154,7 +209,7 @@ sub query_start {
   my $self = shift;
   $self->{query_started} = [ gettimeofday() ];
   $self->{storage_debugobj}->query_start( @_ )
-    if $self->{storage_debug};
+    if $self->{storage_debugobj}->isa(__PACKAGE__) or $self->{storage_debug};
 }
 
 =head2 $self->query_end( $sql, @params )
@@ -167,20 +222,27 @@ sub query_end {
   my ( $self, $sql, @params ) = @_;
 
   $self->{total_time} += my $elapsed = sprintf(
-    '%0.4f', tv_interval( delete $self->{query_started} )
+    '%0.6f', tv_interval( delete $self->{query_started} )
   );
 
   $self->{query_count} += 1;
 
-  $self->{report_table} ||= $self->{table_class}->new(
-    [ 30, 'SQL'    ],
-    [ 28, 'Params' ],
-    [  9, 'Time'   ],
+  if ( not $self->{report_table} ) {
+    $self->{report_table} = $self->{table_class}->new(
+      @{ $self->{report_header} }
+    );
+  }
+
+  goto NEXT_STATS_INSTANCE if $elapsed < $self->{threshold};
+
+  $self->{report_table}->row(
+    $sql, $self->{skip_params} ? () : join( ', ', @params ) || '', $elapsed
   );
 
-  $self->report->row( $sql, join( ', ', @params ) || '', $elapsed );
+ NEXT_STATS_INSTANCE:
   $self->{storage_debugobj}->query_end( $sql, @params )
-    if $self->{storage_debug};
+    if $self->{storage_debugobj}->isa(__PACKAGE__) or $self->{storage_debug};
+
 }
 
 
