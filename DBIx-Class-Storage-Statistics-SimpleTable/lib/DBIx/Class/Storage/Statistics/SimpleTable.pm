@@ -6,7 +6,7 @@ use strict;
 use 5.008005;
 
 use version;
-our $VERSION = '0.01_01';
+our $VERSION = '0.02';
 
 =head1 NAME
 
@@ -67,8 +67,12 @@ Options include:
 
 =item threshold
 
-Queries with a runtime below this number of seconds (with floating point
+Queries with a run-time below this number of seconds (with floating point
 precision) won't be logged. This is useful for slow query reporting.
+
+=item skip_params
+
+Don't create and log to the params column
 
 =back
 
@@ -88,27 +92,34 @@ sub new {
     unless $table_class->isa('Text::SimpleTable');
 
   my $self = $class->next::method();
-  $self->{table_class}   = $table_class;
-  $self->{total_time}    = 0.0;
-  $self->{query_count}   = 0;
-  $self->{threshold}     = delete $opts->{threshold} || 0;
-  $self->{report_header} = delete $opts->{header} || [
-      [ 30, 'SQL'    ],
-      [ 28, 'Params' ],
-      [  9, 'Time'   ],
-  ];
-  $self->{skip_params}   = delete $opts->{skip_params};
+  $self->{table_class}      = $table_class;
+  $self->{total_time}       = 0.0;
+  $self->{query_count}      = 0;
+  $self->{report_row_count} = 0;
+  $self->{skip_params}      = delete $opts->{skip_params};
+  $self->{threshold}        = delete $opts->{threshold} || 0;
+  $self->{initiator}        = caller;
 
-  $self->{initiator}     = caller;
+  $self->{report_header}    = delete $opts->{header}
+    || [[ 30, 'SQL' ],  [ 28, 'Params' ],  [ 9, 'Time' ]];
 
-  if ( @{ $self->{report_header} } == 3 and $self->{skip_params} ) {
-    $self->{report_header}[0][0] += $self->{report_header}[1][0];
-    splice @{ $self->{report_header} }, 1, 1;
-  }
+  $self->_build_report_header;
 
   croak "Unknown options: " . join( ', ', keys %$opts ) if %$opts;
 
   return $self;
+}
+
+sub _build_report_header {
+  my $self = shift;
+  if ( @{ $self->{report_header} } == 3 and $self->{skip_params} ) {
+    $self->{report_header}[0][0] += $self->{report_header}[1][0] + 3;
+    splice @{ $self->{report_header} }, 1, 1;
+  }
+
+  croak "Invalid column count in report_header" unless
+    @{$self->{report_header}} == 3 or
+      ( @{$self->{report_header}} == 2 and $self->{skip_params} );
 }
 
 =head2 $self->install( $storage )
@@ -147,7 +158,16 @@ sub uninstall {
 =head2 $self->report
 
 Returns the gathered statistics as L<Text::SimpleTable> object
-(or as the sub-class choosen at object creation)
+(or as the sub-class chosen at object creation).
+
+It tries its best to return the report you are interested in
+when multiple B<DBIx::Class::Storage::Statistics::SimpleTable> are chained
+together. This is currently bound to the package that created the statistics
+object, i.E. when you are guaranteed to get the correct report when the
+creation happened in the same package as reported by C<caller()>.
+
+This behavior might change in later versions when somebody comes up
+with a better idea how to handle these situations.
 
 =cut
 
@@ -165,10 +185,9 @@ sub report {
   }
 
   my ( $report ) = grep{
-    # printf STDERR "Checking %s vs. %s\n", scalar caller(), $_->{initiator} ;
     scalar caller() eq $_->{initiator} and $_->{report_table}
   } @report_chain;
-#  $report ||= $self;
+  $report ||= $self;
 
   return $report->{report_table};
 
@@ -197,6 +216,17 @@ sub query_count {
   return $self->{query_count};
 }
 
+=head2 $self->report_row_count
+
+Returns the number of queries actually included in the report.
+
+=cut
+
+sub report_row_count {
+  my $self = shift;
+  return $self->{report_row_count};
+}
+
 =head1 OVERRIDDEN METHODS
 
 =head2 $self->query_start
@@ -214,7 +244,7 @@ sub query_start {
 
 =head2 $self->query_end( $sql, @params )
 
-Write the query string, parameters and elepsed time to the statistics table.
+Write the query string, parameters and elapsed time to the statistics table.
 
 =cut
 
@@ -273,8 +303,21 @@ sub AUTOLOAD {
 
 __END__
 
+=head1 BUGS
+
+Plenty, I guess. Especially because this is release has no tests
+apart from standard loading and critics stuff. Patches or pull requests
+welcome.
+
+=head1 SOURCE AVAILABILITY
+
+This code is in Github:
+
+ git://github.com/willert/fierphp-perl.git
+
 =head1 SEE ALSO
 
+L<http://github.com/willert/firephp-perl/>,
 L<perl>, L<Text::SimpleTable>, L<FirePHP::Dispatcher>
 
 =head1 AUTHOR

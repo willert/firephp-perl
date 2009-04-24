@@ -1,5 +1,15 @@
 # This file documents the revision history
 # for DBIx::Class::Storage::Statistics::SimpleTable
+
+0.02
+  - First non-dev release
+  - Support customized headers
+  - Support a threshold for query durations that are to be logged
+  - Added report_row_count accessor to the numer of queries actually logged
+  - Support skipping of parameter column
+  - Allow simple chaining of SimpleTable statistic gatherers
+    (that is: ->report now does its best to DWIM)
+
 0.01_01 - Tue Mar  3 04:14:26 2009
-	Initial release
+  Initial release
 
